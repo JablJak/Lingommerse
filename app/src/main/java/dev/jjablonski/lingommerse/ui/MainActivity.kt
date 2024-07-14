@@ -1,14 +1,10 @@
-package dev.jjablonski.lingommerse.ui;
+package dev.jjablonski.lingommerse.ui
 
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,7 +12,6 @@ import dev.jjablonski.lingommerse.R
 import dev.jjablonski.lingommerse.model.LanguagePair
 import dev.jjablonski.lingommerse.ui.adapter.LanguagePairAdapter
 
-// MainActivity.kt
 class MainActivity : AppCompatActivity() {
 
     private lateinit var originalEditText: EditText
@@ -38,9 +33,6 @@ class MainActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
-        // MainActivity.kt
-        // Inside onCreate method, after setting up the RecyclerView
-
         addButton.setOnClickListener {
             val original = originalEditText.text.toString()
             val translation = translationEditText.text.toString()
@@ -60,4 +52,3 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-
