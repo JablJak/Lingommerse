@@ -40,15 +40,17 @@ class LanguageListsActivity : AppCompatActivity() {
         originalLanguageSpinner = findViewById(R.id.originalLanguageSpinner)
         translationLanguageSpinner = findViewById(R.id.translationLanguageSpinner)
 
-        val languages = listOf("en-US", "pl-PL", "de-DE", "it-IT") // Dodaj tutaj więcej języków, jeśli potrzebujesz
+        val languages = listOf("en-US", "pl-PL", "es-ES", "fr-FR") // Dodaj tutaj więcej języków, jeśli potrzebujesz
         val languageAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, languages)
         languageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         originalLanguageSpinner.adapter = languageAdapter
         translationLanguageSpinner.adapter = languageAdapter
 
-        adapter = LanguageListAdapter(languageLists) { list ->
+        adapter = LanguageListAdapter(languageLists, { list ->
             openLanguagePairsActivity(list)
-        }
+        }, { list ->
+            deleteLanguageList(list)
+        })
         listsRecyclerView.layoutManager = LinearLayoutManager(this)
         listsRecyclerView.adapter = adapter
 
@@ -84,5 +86,12 @@ class LanguageListsActivity : AppCompatActivity() {
         val intent = Intent(this, MainActivity::class.java)
         intent.putExtra("listId", list.id)
         startActivity(intent)
+    }
+
+    private fun deleteLanguageList(list: LanguageList) {
+        CoroutineScope(Dispatchers.IO).launch {
+            db.languageListDao().delete(list)
+            loadLanguageLists()
+        }
     }
 }

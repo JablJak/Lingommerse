@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var listSpinner: Spinner
     private lateinit var listAdapter: ArrayAdapter<String>
     private lateinit var manageListsButton: Button
-
     private val lists = mutableListOf<LanguageList>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,8 +72,8 @@ class MainActivity : AppCompatActivity() {
                 translationEditText.text.clear()
             }
         }
-        val slideshowButton: Button = findViewById(R.id.slideshowButton)
 
+        val slideshowButton: Button = findViewById(R.id.slideshowButton)
         slideshowButton.setOnClickListener {
             val selectedListPosition = listSpinner.selectedItemPosition
             if (selectedListPosition >= 0) {
