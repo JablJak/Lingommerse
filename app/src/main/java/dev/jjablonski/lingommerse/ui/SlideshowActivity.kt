@@ -12,6 +12,7 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.texttospeech.v1.*
 import dev.jjablonski.lingommerse.R
 import dev.jjablonski.lingommerse.data.AppDatabase
+import dev.jjablonski.lingommerse.model.LanguageList
 import dev.jjablonski.lingommerse.model.LanguagePair
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,8 +34,11 @@ class SlideshowActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var playCount = 0
 
-    private lateinit var mediaPlayer: MediaPlayer
+    private var mediaPlayer: MediaPlayer? = null
     private lateinit var db: AppDatabase
+    private var listId: Int = 0
+    private var originalLanguage: String = "en-US"
+    private var translationLanguage: String = "pl-PL"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,12 +57,30 @@ class SlideshowActivity : AppCompatActivity() {
         previousButton.setOnClickListener { showPreviousSlide() }
         goBackButton.setOnClickListener { finish() }
 
-        loadLanguagePairs()
+        listId = intent.getIntExtra("listId", 0)
+
+        loadLanguageList()
+    }
+
+    private fun loadLanguageList() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val list = db.languageListDao().getById(listId)
+            if (list != null) {
+                originalLanguage = list.originalLanguage
+                translationLanguage = list.translationLanguage
+                loadLanguagePairs()
+            } else {
+                runOnUiThread {
+                    Toast.makeText(this@SlideshowActivity, "List not found", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+        }
     }
 
     private fun loadLanguagePairs() {
         CoroutineScope(Dispatchers.IO).launch {
-            val pairs = db.languagePairDao().getAll()
+            val pairs = db.languagePairDao().getAllFromList(listId)
             languagePairs.clear()
             languagePairs.addAll(pairs)
             if (languagePairs.isNotEmpty()) {
@@ -100,12 +122,37 @@ class SlideshowActivity : AppCompatActivity() {
     }
 
     private fun speakOut(pair: LanguagePair) {
+        // Przerwij bieżące odtwarzanie, jeśli trwa
+        mediaPlayer?.stop()
+        mediaPlayer?.reset()
+        mediaPlayer?.release()
+        mediaPlayer = null
+
+        // Rozpocznij nową sekwencję odtwarzania
         handler.post {
-            playText(pair.original, "en-US")
+            playText(pair.original, originalLanguage) {
+                // Po odtworzeniu oryginalnego tekstu
+                handler.postDelayed({
+                    playText(pair.translation, translationLanguage) {
+                        // Po odtworzeniu tłumaczenia
+                        playCount++
+                        if (playCount < 2) {
+                            // Powtórz sekwencję
+                            speakOut(pair)
+                        } else {
+                            // Przejdź do następnego slajdu po drugim odtworzeniu
+                            if (currentIndex < languagePairs.size - 1) {
+                                currentIndex++
+                                displayCurrentSlide()
+                            }
+                        }
+                    }
+                }, 1000)
+            }
         }
     }
 
-    private fun playText(text: String, languageCode: String) {
+    private fun playText(text: String, languageCode: String, onComplete: () -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val credentials = GoogleCredentials.fromStream(resources.openRawResource(R.raw.api_key))
@@ -128,39 +175,32 @@ class SlideshowActivity : AppCompatActivity() {
                     FileOutputStream(tempFile).use { it.write(audioData) }
 
                     mediaPlayer = MediaPlayer()
-                    mediaPlayer.setDataSource(tempFile.absolutePath)
-                    mediaPlayer.prepare()
-                    mediaPlayer.setOnCompletionListener {
-                        handler.postDelayed({
-                            if (languageCode == "en-US") {
-                                playText(languagePairs[currentIndex].translation, "pl-PL")
-                            } else {
-                                playCount++
-                                if (playCount < 2) {
-                                    speakOut(languagePairs[currentIndex])
-                                } else {
-                                    if (currentIndex < languagePairs.size - 1) {
-                                        currentIndex++
-                                        displayCurrentSlide()
-                                    }
-                                }
-                            }
-                        }, 1000)
+                    mediaPlayer?.setDataSource(tempFile.absolutePath)
+                    mediaPlayer?.prepare()
+                    mediaPlayer?.setOnCompletionListener {
+                        tempFile.delete()
+                        onComplete()
                     }
-                    mediaPlayer.start()
-
-                    tempFile.deleteOnExit()
+                    mediaPlayer?.start()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                onComplete()
             }
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        // Przerwij odtwarzanie dźwięków gdy aktywność jest zatrzymywana
+        mediaPlayer?.stop()
+        mediaPlayer?.reset()
+        mediaPlayer?.release()
+        mediaPlayer = null
+    }
+
     override fun onDestroy() {
-        if (::mediaPlayer.isInitialized) {
-            mediaPlayer.release()
-        }
         super.onDestroy()
+        handler.removeCallbacksAndMessages(null)
     }
 }

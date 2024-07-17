@@ -1,6 +1,5 @@
-<!-- activity_main.xml -->
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -10,31 +9,46 @@
         android:id="@+id/originalEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Original"/>
+        android:hint="Original text" />
 
     <EditText
         android:id="@+id/translationEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Translation"/>
+        android:hint="Translation text"
+        android:layout_marginTop="8dp" />
+
+    <Spinner
+        android:id="@+id/listSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" />
 
     <Button
         android:id="@+id/addButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:text="Add"
+        android:layout_marginTop="8dp" />
 
     <Button
         android:id="@+id/slideshowButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Start Slideshow"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="8dp" />
 
+    <Button
+        android:id="@+id/manageListsButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Manage Lists"
+        android:layout_marginTop="8dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp"/>
 </LinearLayout>

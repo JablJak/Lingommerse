@@ -25,6 +25,10 @@
             android:name=".ui.SlideshowActivity"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".ui.LanguageListsActivity"
+            android:exported="false">
+        </activity>
 
     </application>
 

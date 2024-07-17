@@ -8,8 +8,8 @@ import dev.jjablonski.lingommerse.model.LanguagePair
 
 @Dao
 interface LanguagePairDao {
-    @Query("SELECT * FROM language_pairs")
-    suspend fun getAll(): List<LanguagePair>
+    @Query("SELECT * FROM language_pairs WHERE listId = :listId")
+    suspend fun getAllFromList(listId: Int): List<LanguagePair>
 
     @Insert
     suspend fun insert(pair: LanguagePair)
